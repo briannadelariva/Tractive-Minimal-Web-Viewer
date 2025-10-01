@@ -1,11 +1,7 @@
 """
 Tractive Minimal Web Viewer
 
-Build: docker build -t tractive-web .
-Run: docker run --rm -p 8080:8080 tractive-web
-Open: http://localhost:8080
-
-A minimal, production-ready web app that runs entirely in a Docker container.
+A minimal web app for viewing Tractive tracker data.
 Presents a login page for a Tractive account, authenticates via the unofficial
 Tractive API client, and displays available data (trackers, hardware info,
 position data, geofences, live mode state).
