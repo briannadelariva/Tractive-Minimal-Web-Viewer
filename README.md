@@ -1,6 +1,8 @@
 # Tractive Minimal Web Viewer
 
-A minimal web application with a dev container setup for VS Code. The app presents a login page for a Tractive account (email + password), authenticates via the unofficial Tractive API client, and displays available data from trackers.
+A minimal web application with a VS Code Dev Container setup for easy development. The app presents a login page for a Tractive account (email + password), authenticates via the unofficial Tractive API client, and displays available data from trackers.
+
+The project uses VS Code Dev Containers to provide a consistent development environment. The dev container automatically installs Python 3.12 and all required dependencies, making it easy to get started without manual environment setup.
 
 ## Screenshots
 
