@@ -1,6 +1,8 @@
 # Tractive Minimal Web Viewer
 
-A minimal web application with a dev container setup for VS Code. The app presents a login page for a Tractive account (email + password), authenticates via the unofficial Tractive API client, and displays available data from trackers.
+A minimal web application with a VS Code Dev Container setup for easy development. The app presents a login page for a Tractive account (email + password), authenticates via the unofficial Tractive API client, and displays available data from trackers.
+
+The project uses VS Code Dev Containers to provide a consistent development environment. The dev container automatically installs Python 3.12 and all required dependencies, making it easy to get started without manual environment setup.
 
 ## Screenshots
 
@@ -14,16 +16,23 @@ A minimal web application with a dev container setup for VS Code. The app presen
 
 ### VS Code Dev Container (Recommended)
 
+The dev container provides an isolated, reproducible development environment with all dependencies pre-configured.
+
 1. Install [VS Code](https://code.visualstudio.com/) and the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 2. Clone this repository
 3. Open the repository in VS Code
 4. When prompted, click "Reopen in Container" (or press F1 and select "Dev Containers: Reopen in Container")
-5. Wait for the container to build and dependencies to install
-6. Run the development server:
+5. Wait for the container to build and dependencies to install automatically
+6. The dev container will:
+   - Use Python 3.12 from the official Microsoft dev container image
+   - Install all requirements from `requirements.txt`
+   - Forward port 8080 for the web application
+   - Configure Python extensions and settings
+7. Run the development server:
    ```bash
    python -m uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
    ```
-7. Open http://localhost:8080 in your browser
+8. Open http://localhost:8080 in your browser
 
 ### Local Development (Without Dev Container)
 
@@ -99,6 +108,17 @@ requirements.txt        # Python dependencies
 - `POST /toggle-live/{tracker_id}` - Toggle live tracking
 
 ## Configuration
+
+### Dev Container
+
+The `.devcontainer/devcontainer.json` file configures the development environment:
+
+- **Base Image**: `mcr.microsoft.com/devcontainers/python:3.12` - Official Microsoft Python 3.12 dev container
+- **Extensions**: Installs Python and Pylance extensions automatically
+- **Port Forwarding**: Forwards port 8080 for the web application
+- **Post-Create Command**: Automatically installs Python dependencies from `requirements.txt`
+- **Environment Variables**: Pre-configures `PORT` and `LOG_LEVEL`
+- **Remote User**: Runs as `vscode` user within the container
 
 ### Environment Variables
 - `SECRET_KEY` - Session encryption key (auto-generated if not set)
