@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Tractive Web Viewer{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1><a href="/">Tractive Web Viewer</a></h1>
+            {% if user %}
+            <div class="user-info">
+                <span>{{ user.email }}</span>
+                <form method="post" action="/logout" style="display: inline;">
+                    <button type="submit" class="btn btn-secondary">Logout</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            {% if error %}
+            <div class="alert alert-error">
+                <strong>Error:</strong> {{ error }}
+            </div>
+            {% endif %}
+
+            {% if errors %}
+            <div class="alert alert-warning">
+                <strong>Some data could not be loaded:</strong>
+                <ul>
+                    {% for error in errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>
+                <small>
+                    This uses an unofficial Tractive API and may break if endpoints change. 
+                    Use at your own risk.
+                </small>
+            </p>
+        </div>
+    </footer>
+</body>
+</html>

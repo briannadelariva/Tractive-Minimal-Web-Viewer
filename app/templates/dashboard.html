@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Tractive Web Viewer{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="section">
+        <h2>Account Summary</h2>
+        <div class="info-grid">
+            <div><strong>Email:</strong> {{ user.email[:3] + '***' + user.email.split('@')[1] if user.email else 'Unknown' }}</div>
+            <div><strong>Last Refresh:</strong> {{ user.last_activity or 'Unknown' }}</div>
+        </div>
+        <button onclick="location.reload()" class="btn btn-secondary">Refresh Data</button>
+    </div>
+
+    {% if trackers %}
+    <div class="section">
+        <h2>Trackers</h2>
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Pet Name</th>
+                        <th>Model</th>
+                        <th>Firmware</th>
+                        <th>Battery %</th>
+                        <th>Charging</th>
+                        <th>Last Seen</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tracker in trackers %}
+                    <tr class="{{ 'selected' if tracker.id == selected_tracker.id }}">
+                        <td><code>{{ tracker.id[:8] }}...</code></td>
+                        <td>{{ tracker.name }}</td>
+                        <td>{{ tracker.pet_name }}</td>
+                        <td>{{ tracker.model }}</td>
+                        <td>{{ tracker.firmware }}</td>
+                        <td>{{ tracker.battery }}%</td>
+                        <td>{{ '🔌' if tracker.charging else '🔋' }}</td>
+                        <td>{{ tracker.last_seen }}</td>
+                        <td>
+                            {% if tracker.id != selected_tracker.id %}
+                            <a href="?tracker_id={{ tracker.id }}" class="btn btn-small">Select</a>
+                            {% else %}
+                            <span class="selected-marker">Selected</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="json-link">
+            <a href="/data/json/trackers" target="_blank">View JSON</a>
+        </p>
+    </div>
+
+    {% if selected_tracker %}
+    <div class="section">
+        <h2>Selected Tracker: {{ selected_tracker.pet_name }} ({{ selected_tracker.name }})</h2>
+        
+        {% if hardware_info %}
+        <div class="subsection">
+            <h3>Hardware Information</h3>
+            <div class="info-grid">
+                <div><strong>Battery Level:</strong> {{ hardware_info.battery_level }}%</div>
+                <div><strong>Firmware:</strong> {{ hardware_info.firmware_version }}</div>
+                <div><strong>Model:</strong> {{ hardware_info.model }}</div>
+                <div><strong>Hardware ID:</strong> <code>{{ hardware_info.hardware_id }}</code></div>
+                <div><strong>Charging:</strong> {{ 'Yes' if hardware_info.charging else 'No' }}</div>
+                <div><strong>Capabilities:</strong> {{ ', '.join(hardware_info.capabilities) if hardware_info.capabilities else 'None listed' }}</div>
+            </div>
+            <p class="json-link">
+                <a href="/data/json/hw_info?tracker_id={{ selected_tracker.id }}" target="_blank">View JSON</a>
+            </p>
+        </div>
+        {% endif %}
+
+        {% if latest_position %}
+        <div class="subsection">
+            <h3>Latest Position</h3>
+            {% if latest_position.error %}
+            <p class="error">{{ latest_position.error }}</p>
+            {% else %}
+            <div class="info-grid">
+                <div><strong>Timestamp:</strong> {{ latest_position.timestamp }}</div>
+                <div><strong>Latitude:</strong> {{ latest_position.latitude }}</div>
+                <div><strong>Longitude:</strong> {{ latest_position.longitude }}</div>
+                <div><strong>Speed:</strong> {{ latest_position.speed }} km/h</div>
+                <div><strong>Accuracy:</strong> {{ latest_position.accuracy }}m</div>
+                {% if latest_position.altitude %}
+                <div><strong>Altitude:</strong> {{ latest_position.altitude }}m</div>
+                {% endif %}
+            </div>
+            {% endif %}
+            <p class="json-link">
+                <a href="/data/json/latest?tracker_id={{ selected_tracker.id }}" target="_blank">View JSON</a>
+            </p>
+        </div>
+        {% endif %}
+
+        {% if recent_history %}
+        <div class="subsection">
+            <h3>Recent History Sample (Last 2 Hours)</h3>
+            {% if recent_history %}
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Latitude</th>
+                            <th>Longitude</th>
+                            <th>Speed</th>
+                            <th>Accuracy</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for position in recent_history[:10] %}
+                        <tr>
+                            <td>{{ position.timestamp }}</td>
+                            <td>{{ position.latitude }}</td>
+                            <td>{{ position.longitude }}</td>
+                            <td>{{ position.speed }} km/h</td>
+                            <td>{{ position.accuracy }}m</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if recent_history|length > 10 %}
+            <p><em>Showing first 10 of {{ recent_history|length }} points</em></p>
+            {% endif %}
+            {% else %}
+            <p>No recent history available</p>
+            {% endif %}
+            <p class="json-link">
+                <a href="/data/json/history?tracker_id={{ selected_tracker.id }}" target="_blank">View JSON</a>
+            </p>
+        </div>
+        {% endif %}
+
+        {% if geofences is not none %}
+        <div class="subsection">
+            <h3>Geofences</h3>
+            {% if geofences %}
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Enabled</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for geofence in geofences %}
+                        <tr>
+                            <td>{{ geofence.name }}</td>
+                            <td>{{ geofence.type }}</td>
+                            <td>{{ 'Yes' if geofence.enabled else 'No' }}</td>
+                            <td>
+                                {% if geofence.type == 'circle' %}
+                                Radius: {{ geofence.radius }}m
+                                {% else %}
+                                {{ geofence.coordinates_count }} coordinates
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>No geofences configured</p>
+            {% endif %}
+            <p class="json-link">
+                <a href="/data/json/geofences?tracker_id={{ selected_tracker.id }}" target="_blank">View JSON</a>
+            </p>
+        </div>
+        {% endif %}
+
+        {% if live_tracking %}
+        <div class="subsection">
+            <h3>Live Tracking State</h3>
+            <div class="info-grid">
+                <div><strong>Status:</strong> {{ 'Enabled' if live_tracking.live_tracking_enabled else 'Disabled' }}</div>
+                {% if live_tracking.message %}
+                <div><strong>Message:</strong> {{ live_tracking.message }}</div>
+                {% endif %}
+                {% if live_tracking.error %}
+                <div class="error"><strong>Error:</strong> {{ live_tracking.error }}</div>
+                {% endif %}
+            </div>
+            <form method="post" action="/toggle-live/{{ selected_tracker.id }}" style="margin-top: 10px;">
+                <input type="hidden" name="enable" value="{{ 'false' if live_tracking.live_tracking_enabled else 'true' }}">
+                <button type="submit" class="btn btn-secondary">
+                    {{ 'Disable' if live_tracking.live_tracking_enabled else 'Enable' }} Live Tracking
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="section">
+        <h2>No Trackers Found</h2>
+        <p>No trackers were found for your account. Please check that:</p>
+        <ul>
+            <li>Your Tractive account has active trackers</li>
+            <li>Your login credentials are correct</li>
+            <li>The Tractive API is accessible</li>
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
