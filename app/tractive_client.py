@@ -22,6 +22,13 @@ except ImportError:
         
         async def __aexit__(self, *args):
             pass
+        
+        async def authenticate(self):
+            # Mock authentication for testing
+            return {
+                'user_id': 'test_user_id',
+                'access_token': 'test_access_token'
+            }
 
 logger = logging.getLogger(__name__)
 
@@ -51,10 +58,10 @@ class TractiveClient:
             self._client = Tractive(email, password)
             await self._client.__aenter__()
             
-            # Get user info and store session data
-            user_info = await self._client.user_details()
-            self._user_id = user_info.get('_id')
-            self._access_token = getattr(self._client, '_access_token', None)
+            # Authenticate and get user credentials
+            credentials = await self._client.authenticate()
+            self._user_id = credentials.get('user_id')
+            self._access_token = credentials.get('access_token')
             
             logger.info(f"Successfully authenticated user: {email}")
             
