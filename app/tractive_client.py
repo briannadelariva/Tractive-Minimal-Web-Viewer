@@ -99,7 +99,14 @@ class TractiveClient:
             raise TractiveClientError("Not authenticated")
             
         try:
-            trackers = await self._client.tracker()
+            tracker_objects = await self._client.trackers()
+            
+            # Get details for each tracker
+            trackers = []
+            for tracker_obj in tracker_objects:
+                tracker_details = await tracker_obj.details()
+                trackers.append(tracker_details)
+            
             self._trackers = trackers
             
             # Format tracker data for display
