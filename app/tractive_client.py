@@ -200,16 +200,34 @@ class TractiveClient:
             if not positions:
                 return []
             
+            # Handle different response formats
+            # If positions is a dict (wrapper), extract the actual position data
+            if isinstance(positions, dict):
+                # Try common keys for position data
+                positions = positions.get('positions') or positions.get('segments') or positions.get('data') or []
+            
             # Format position data
             formatted_positions = []
             for pos in positions[:100]:  # Limit to first 100 points
-                formatted_positions.append({
-                    'timestamp': pos.get('time', 'Unknown'),
-                    'latitude': pos.get('latlong', [None, None])[0],
-                    'longitude': pos.get('latlong', [None, None])[1],
-                    'speed': pos.get('speed', 0),
-                    'accuracy': pos.get('pos_uncertainty', 0)
-                })
+                # Handle both list and dict formats
+                if isinstance(pos, dict):
+                    # Dictionary format
+                    formatted_positions.append({
+                        'timestamp': pos.get('time', 'Unknown'),
+                        'latitude': pos.get('latlong', [None, None])[0],
+                        'longitude': pos.get('latlong', [None, None])[1],
+                        'speed': pos.get('speed', 0),
+                        'accuracy': pos.get('pos_uncertainty', 0)
+                    })
+                elif isinstance(pos, (list, tuple)) and len(pos) >= 3:
+                    # List format: typically [timestamp, lat, lon, ...]
+                    formatted_positions.append({
+                        'timestamp': pos[0] if len(pos) > 0 else 'Unknown',
+                        'latitude': pos[1] if len(pos) > 1 else None,
+                        'longitude': pos[2] if len(pos) > 2 else None,
+                        'speed': pos[3] if len(pos) > 3 else 0,
+                        'accuracy': pos[4] if len(pos) > 4 else 0
+                    })
             
             return formatted_positions
             
