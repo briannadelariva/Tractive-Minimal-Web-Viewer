@@ -222,10 +222,14 @@ class TractiveClient:
                 # Handle both list and dict formats
                 if isinstance(pos, dict):
                     # Dictionary format - extract fields from API format to display format
+                    latlong = pos.get('latlong', [None, None])
+                    latitude = latlong[0] if latlong and len(latlong) > 0 else None
+                    longitude = latlong[1] if latlong and len(latlong) > 1 else None
+                    
                     formatted_positions.append({
                         'timestamp': pos.get('time', 'Unknown'),
-                        'latitude': pos.get('latlong', [None, None])[0],
-                        'longitude': pos.get('latlong', [None, None])[1],
+                        'latitude': latitude,
+                        'longitude': longitude,
                         'speed': pos.get('speed', None),
                         'accuracy': pos.get('pos_uncertainty', 0),
                         'altitude': pos.get('alt', None),
