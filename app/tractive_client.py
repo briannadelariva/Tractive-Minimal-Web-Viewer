@@ -206,17 +206,27 @@ class TractiveClient:
                 # Try common keys for position data
                 positions = positions.get('positions') or positions.get('segments') or positions.get('data') or []
             
+            # Ensure positions is a list
+            if not isinstance(positions, (list, tuple)):
+                logger.warning(f"Unexpected positions format: {type(positions)}")
+                return []
+            
             # Format position data
             formatted_positions = []
             for pos in positions[:100]:  # Limit to first 100 points
+                # Skip if pos is not a dict or list/tuple
+                if not isinstance(pos, (dict, list, tuple)):
+                    logger.warning(f"Skipping unexpected position format: {type(pos)}")
+                    continue
+                    
                 # Handle both list and dict formats
                 if isinstance(pos, dict):
-                    # Dictionary format
+                    # Dictionary format - extract fields from API format to display format
                     formatted_positions.append({
                         'timestamp': pos.get('time', 'Unknown'),
                         'latitude': pos.get('latlong', [None, None])[0],
                         'longitude': pos.get('latlong', [None, None])[1],
-                        'speed': pos.get('speed', 0),
+                        'speed': pos.get('speed', None),
                         'accuracy': pos.get('pos_uncertainty', 0),
                         'altitude': pos.get('alt', None),
                         'course': pos.get('course', None),
@@ -228,7 +238,7 @@ class TractiveClient:
                         'timestamp': pos[0] if len(pos) > 0 else 'Unknown',
                         'latitude': pos[1] if len(pos) > 1 else None,
                         'longitude': pos[2] if len(pos) > 2 else None,
-                        'speed': pos[3] if len(pos) > 3 else 0,
+                        'speed': pos[3] if len(pos) > 3 else None,
                         'accuracy': pos[4] if len(pos) > 4 else 0,
                         'altitude': None,
                         'course': None,
