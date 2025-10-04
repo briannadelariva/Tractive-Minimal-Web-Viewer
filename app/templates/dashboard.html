@@ -127,9 +127,9 @@
                             <td>{{ position.timestamp }}</td>
                             <td>{{ position.latitude }}</td>
                             <td>{{ position.longitude }}</td>
-                            <td>{{ position.speed if position.speed is not none else 'N/A' }} {% if position.speed is not none %}km/h{% endif %}</td>
+                            <td>{% if position.speed is not none %}{{ position.speed }} km/h{% else %}N/A{% endif %}</td>
                             <td>{{ position.accuracy }}m</td>
-                            <td>{{ position.altitude if position.altitude is not none else 'N/A' }} {% if position.altitude is not none %}m{% endif %}</td>
+                            <td>{% if position.altitude is not none %}{{ position.altitude }}m{% else %}N/A{% endif %}</td>
                             <td>{{ position.course if position.course is not none else 'N/A' }}</td>
                             <td>{{ position.sensor_used if position.sensor_used else 'N/A' }}</td>
                         </tr>
