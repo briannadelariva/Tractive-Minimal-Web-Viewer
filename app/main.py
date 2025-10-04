@@ -213,7 +213,7 @@ async def dashboard(request: Request, tracker_id: Optional[str] = None):
             "selected_tracker": selected_tracker,
             "hardware_info": None,
             "latest_position": None,
-            "recent_history": None,
+            "recent_history": [],
             "geofences": None,
             "live_tracking": None,
             "errors": []
@@ -230,10 +230,18 @@ async def dashboard(request: Request, tracker_id: Optional[str] = None):
         except Exception as e:
             dashboard_data["errors"].append(f"Latest position: {str(e)}")
         
+        # Try to get position history - first 1 day, then 1 week if empty
         try:
-            dashboard_data["recent_history"] = await client.get_position_history(tracker_id, hours=2)
+            dashboard_data["recent_history"] = await client.get_position_history(tracker_id, hours=24)
+            if not dashboard_data["recent_history"]:
+                # No data for 1 day, try 1 week
+                dashboard_data["recent_history"] = await client.get_position_history(tracker_id, hours=168)
+            # If still no data, ensure it's an empty list not None
+            if not dashboard_data["recent_history"]:
+                dashboard_data["recent_history"] = []
         except Exception as e:
             dashboard_data["errors"].append(f"Position history: {str(e)}")
+            dashboard_data["recent_history"] = []  # Ensure section still appears
         
         try:
             dashboard_data["geofences"] = await client.get_geofences(tracker_id)

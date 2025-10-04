@@ -103,10 +103,10 @@
         </div>
         {% endif %}
 
-        {% if recent_history %}
         <div class="subsection">
-            <h3>Recent History Sample (Last 2 Hours)</h3>
-            {% if recent_history %}
+            <h3>Position History</h3>
+            {% if recent_history and recent_history|length > 0 %}
+            <p><em>Showing position history (up to 1 day, or 1 week if no recent data)</em></p>
             <div class="table-container">
                 <table class="data-table">
                     <thead>
@@ -135,13 +135,12 @@
             <p><em>Showing first 10 of {{ recent_history|length }} points</em></p>
             {% endif %}
             {% else %}
-            <p>No recent history available</p>
+            <p>No position history available for the past week</p>
             {% endif %}
             <p class="json-link">
                 <a href="/data/json/history?tracker_id={{ selected_tracker.id }}" target="_blank">View JSON</a>
             </p>
         </div>
-        {% endif %}
 
         {% if geofences is not none %}
         <div class="subsection">
