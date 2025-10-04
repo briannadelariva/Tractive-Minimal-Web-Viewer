@@ -22,6 +22,13 @@ except ImportError:
         
         async def __aexit__(self, *args):
             pass
+        
+        async def authenticate(self):
+            # Mock authentication for testing
+            return {
+                'user_id': 'test_user_id',
+                'access_token': 'test_access_token'
+            }
 
 logger = logging.getLogger(__name__)
 
@@ -51,10 +58,10 @@ class TractiveClient:
             self._client = Tractive(email, password)
             await self._client.__aenter__()
             
-            # Get user info and store session data
-            user_info = await self._client.user_details()
-            self._user_id = user_info.get('_id')
-            self._access_token = getattr(self._client, '_access_token', None)
+            # Authenticate and get user credentials
+            credentials = await self._client.authenticate()
+            self._user_id = credentials.get('user_id')
+            self._access_token = credentials.get('access_token')
             
             logger.info(f"Successfully authenticated user: {email}")
             
@@ -92,7 +99,14 @@ class TractiveClient:
             raise TractiveClientError("Not authenticated")
             
         try:
-            trackers = await self._client.tracker()
+            tracker_objects = await self._client.trackers()
+            
+            # Get details for each tracker
+            trackers = []
+            for tracker_obj in tracker_objects:
+                tracker_details = await tracker_obj.details()
+                trackers.append(tracker_details)
+            
             self._trackers = trackers
             
             # Format tracker data for display
@@ -146,12 +160,11 @@ class TractiveClient:
             raise TractiveClientError("Not authenticated")
             
         try:
-            positions = await self._client.pos_report(tracker_ids=[tracker_id])
+            tracker = self._client.tracker(tracker_id)
+            pos_data = await tracker.pos_report()
             
-            if not positions or tracker_id not in positions:
+            if not pos_data:
                 return {'error': 'No position data available'}
-            
-            pos_data = positions[tracker_id]
             
             return {
                 'tracker_id': tracker_id,
@@ -177,20 +190,19 @@ class TractiveClient:
             to_time = datetime.now()
             from_time = to_time - timedelta(hours=hours)
             
-            positions = await self._client.positions(
-                tracker_ids=[tracker_id],
+            tracker = self._client.tracker(tracker_id)
+            positions = await tracker.positions(
                 time_from=int(from_time.timestamp()),
-                time_to=int(to_time.timestamp())
+                time_to=int(to_time.timestamp()),
+                fmt="json_segments"
             )
             
-            if not positions or tracker_id not in positions:
+            if not positions:
                 return []
-            
-            pos_list = positions[tracker_id]
             
             # Format position data
             formatted_positions = []
-            for pos in pos_list[:100]:  # Limit to first 100 points
+            for pos in positions[:100]:  # Limit to first 100 points
                 formatted_positions.append({
                     'timestamp': pos.get('time', 'Unknown'),
                     'latitude': pos.get('latlong', [None, None])[0],

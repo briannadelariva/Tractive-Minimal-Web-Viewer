@@ -1,6 +1,8 @@
 # Tractive Minimal Web Viewer
 
-A minimal, production-ready web application that runs entirely in a Docker container. The app presents a login page for a Tractive account (email + password), authenticates via the unofficial Tractive API client, and displays available data from trackers.
+A minimal web application with a VS Code Dev Container setup for easy development. The app presents a login page for a Tractive account (email + password), authenticates via the unofficial Tractive API client, and displays available data from trackers.
+
+The project uses VS Code Dev Containers to provide a consistent development environment. The dev container automatically installs Python 3.12 and all required dependencies, making it easy to get started without manual environment setup.
 
 ## Screenshots
 
@@ -12,20 +14,27 @@ A minimal, production-ready web application that runs entirely in a Docker conta
 
 ## Quick Start
 
-### Docker (Recommended)
+### VS Code Dev Container (Recommended)
 
-```bash
-# Build the image
-docker build -t tractive-web .
+The dev container provides an isolated, reproducible development environment with all dependencies pre-configured.
 
-# Run the container
-docker run --rm -p 8080:8080 tractive-web
+1. Install [VS Code](https://code.visualstudio.com/) and the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+2. Clone this repository
+3. Open the repository in VS Code
+4. When prompted, click "Reopen in Container" (or press F1 and select "Dev Containers: Reopen in Container")
+5. Wait for the container to build and dependencies to install automatically
+6. The dev container will:
+   - Use Python 3.12 from the official Microsoft dev container image
+   - Install all requirements from `requirements.txt`
+   - Forward port 8080 for the web application
+   - Configure Python extensions and settings
+7. Run the development server:
+   ```bash
+   python -m uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
+   ```
+8. Open http://localhost:8080 in your browser
 
-# Open in browser
-open http://localhost:8080
-```
-
-### Development
+### Local Development (Without Dev Container)
 
 ```bash
 # Install dependencies
@@ -60,10 +69,12 @@ open http://localhost:8080
 - **Styling**: Minimal CSS, no JavaScript frameworks
 - **Authentication**: aiotractive client for Tractive API
 - **Sessions**: Signed cookies with server-side storage
-- **Container**: Docker with multi-stage build
+- **Development**: VS Code Dev Container
 
 ### File Structure
 ```
+.devcontainer/
+└── devcontainer.json    # VS Code dev container configuration
 app/
 ├── main.py              # FastAPI application with routes
 ├── tractive_client.py   # Tractive API wrapper
@@ -73,7 +84,6 @@ app/
 │   └── dashboard.html  # Main data display
 └── static/
     └── styles.css      # Minimal CSS styling
-Dockerfile              # Container definition
 requirements.txt        # Python dependencies
 ```
 
@@ -99,6 +109,17 @@ requirements.txt        # Python dependencies
 
 ## Configuration
 
+### Dev Container
+
+The `.devcontainer/devcontainer.json` file configures the development environment:
+
+- **Base Image**: `mcr.microsoft.com/devcontainers/python:3.12` - Official Microsoft Python 3.12 dev container
+- **Extensions**: Installs Python and Pylance extensions automatically
+- **Port Forwarding**: Forwards port 8080 for the web application
+- **Post-Create Command**: Automatically installs Python dependencies from `requirements.txt`
+- **Environment Variables**: Pre-configures `PORT` and `LOG_LEVEL`
+- **Remote User**: Runs as `vscode` user within the container
+
 ### Environment Variables
 - `SECRET_KEY` - Session encryption key (auto-generated if not set)
 - `PORT` - Server port (default: 8080)
@@ -110,17 +131,17 @@ requirements.txt        # Python dependencies
 - Password never stored or logged
 - Secrets redacted from logs
 - Basic CSRF protection on forms
-- Non-root user in Docker container
 
 ## Usage
 
-1. Start the container: `docker run --rm -p 8080:8080 tractive-web`
-2. Open http://localhost:8080
-3. Enter your Tractive email and password
-4. View your trackers and their data
-5. Use dropdown to switch between trackers
-6. Click "View JSON" links to inspect raw API responses
-7. Use "Refresh Data" to reload information
+1. Open the project in VS Code with the Dev Container
+2. Start the development server: `python -m uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload`
+3. Open http://localhost:8080
+4. Enter your Tractive email and password
+5. View your trackers and their data
+6. Use dropdown to switch between trackers
+7. Click "View JSON" links to inspect raw API responses
+8. Use "Refresh Data" to reload information
 
 ## Limitations
 
