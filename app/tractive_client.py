@@ -101,10 +101,22 @@ class TractiveClient:
         try:
             tracker_objects = await self._client.trackers()
             
-            # Get details for each tracker
+            # Get details and hardware info for each tracker
             trackers = []
             for tracker_obj in tracker_objects:
                 tracker_details = await tracker_obj.details()
+                # Fetch hardware info to get battery level and charging status
+                try:
+                    hw_info = await tracker_obj.hw_info()
+                    # Merge hardware info into tracker details
+                    tracker_details['battery_level'] = hw_info.get('battery_level', 0)
+                    tracker_details['charging'] = hw_info.get('charging', False)
+                except Exception as e:
+                    logger.warning(f"Failed to get hw_info for tracker {tracker_details.get('_id')}: {str(e)}")
+                    # Use defaults if hw_info fails
+                    tracker_details['battery_level'] = 0
+                    tracker_details['charging'] = False
+                
                 trackers.append(tracker_details)
             
             self._trackers = trackers
@@ -135,19 +147,23 @@ class TractiveClient:
             raise TractiveClientError("Not authenticated")
             
         try:
-            # Get tracker details
+            # Get tracker details from cache for basic info
             tracker = next((t for t in (self._trackers or []) if t.get('_id') == tracker_id), None)
             if not tracker:
                 raise TractiveClientError(f"Tracker {tracker_id} not found")
             
+            # Fetch fresh hardware info from API to get current battery level
+            tracker_obj = self._client.tracker(tracker_id)
+            hw_info = await tracker_obj.hw_info()
+            
             return {
                 'tracker_id': tracker_id,
-                'battery_level': tracker.get('battery_level', 0),
+                'battery_level': hw_info.get('battery_level', 0),
                 'firmware_version': tracker.get('fw_version', 'Unknown'),
                 'model': tracker.get('model_number', 'Unknown'),
                 'capabilities': tracker.get('capabilities', []),
                 'hardware_id': tracker.get('hw_id', 'Unknown'),
-                'charging': tracker.get('charging', False)
+                'charging': hw_info.get('charging', False)
             }
             
         except Exception as e:
