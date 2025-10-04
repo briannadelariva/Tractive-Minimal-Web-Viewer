@@ -217,7 +217,10 @@ class TractiveClient:
                         'latitude': pos.get('latlong', [None, None])[0],
                         'longitude': pos.get('latlong', [None, None])[1],
                         'speed': pos.get('speed', 0),
-                        'accuracy': pos.get('pos_uncertainty', 0)
+                        'accuracy': pos.get('pos_uncertainty', 0),
+                        'altitude': pos.get('alt', None),
+                        'course': pos.get('course', None),
+                        'sensor_used': pos.get('sensor_used', None)
                     })
                 elif isinstance(pos, (list, tuple)) and len(pos) >= 3:
                     # List format: typically [timestamp, lat, lon, ...]
@@ -226,7 +229,10 @@ class TractiveClient:
                         'latitude': pos[1] if len(pos) > 1 else None,
                         'longitude': pos[2] if len(pos) > 2 else None,
                         'speed': pos[3] if len(pos) > 3 else 0,
-                        'accuracy': pos[4] if len(pos) > 4 else 0
+                        'accuracy': pos[4] if len(pos) > 4 else 0,
+                        'altitude': None,
+                        'course': None,
+                        'sensor_used': None
                     })
             
             return formatted_positions
